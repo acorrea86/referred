@@ -25,12 +25,12 @@ func Initialize() (*handler.Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	kafkaReducer := providerReducer(repository, consumer)
 	producer, err := providerKafkaProducer()
 	if err != nil {
 		return nil, err
 	}
 	kafkaProducer := providerAggregation(producer)
+	kafkaReducer := providerReducer(repository, consumer, kafkaProducer)
 	handlerHandler, err := providerHandler(repository, kafkaReducer, kafkaProducer)
 	if err != nil {
 		return nil, err

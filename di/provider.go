@@ -22,14 +22,17 @@ func providerNeoSession() (contracts.NeoSession, error) {
 	if neo4jUri == "" {
 		return nil, errors.New("env var NEO4J_URI is not defined")
 	}
+
 	neo4jdb := os.Getenv("NEO4J_DATABASE")
 	if neo4jdb == "" {
 		return nil, errors.New("env var NEO4J_DATABASE is not defined")
 	}
+
 	neo4jUsername := os.Getenv("NEO4J_USERNAME")
 	if neo4jUsername == "" {
 		return nil, errors.New("env var NEO4J_USERNAME is not defined")
 	}
+
 	neo4jPassword := os.Getenv("NEO4J_PASSWORD")
 	if neo4jPassword == "" {
 		return nil, errors.New("env var NEO4J_PASSWORD is not defined")
@@ -132,17 +135,23 @@ func providerKafkaProducer() (*kafka.Producer, error) {
 	return data, err
 }
 
-func providerReducer(repository *repository.Repository, consumer *kafka.Consumer) *events.KafkaReducer {
-	return events.NewKafkaReducer(repository, consumer)
+func providerReducer(
+	repository *repository.Repository,
+	consumer *kafka.Consumer,
+	producer *events.KafkaProducer,
+) *events.KafkaReducer {
+	return events.NewKafkaReducer(repository, consumer, producer)
 }
 
 func providerAggregation(producer *kafka.Producer) *events.KafkaProducer {
-	return &events.KafkaProducer{
-		Producer: producer,
-	}
+	return events.NewProducer(producer)
 }
 
-func providerHandler(repository *repository.Repository, reducer *events.KafkaReducer, producer *events.KafkaProducer) (*handler.Handler, error) {
+func providerHandler(
+	repository *repository.Repository,
+	reducer *events.KafkaReducer,
+	producer *events.KafkaProducer,
+) (*handler.Handler, error) {
 	graphqlPort := os.Getenv("GRAPHQL_PORT")
 	if graphqlPort == "" {
 		return nil, errors.New("env var GRAPHQL_PORT is not defined")
